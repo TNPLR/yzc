@@ -6,6 +6,81 @@
  * char as unsigned char
  */
 /*****************************************************************************
+ * Enum
+ *****************************************************************************/
+enum ALL_TOKEN {
+  COLON, SEMILICON, LPAREN, RPAREN, LSQR_BRAC, RSQR_BRAC, LCUR_BRAC, RCUR_BRAC,
+  INT_NUM, UINT_NUM, STRING_LIT, AUTO, BREAK, CASE, CHAR, CONST, CONTINUE,
+  DEFAULT, DO, DOUBLE, ELSE, ENUM, EXTERN, FLOAT, FOR, GOTO, IF, INLINE,
+  INT, LONG, REGISTER, RESTRICT, RET, SHORT, SIGNED,
+  SIZEOF, STATIC, STRUCT, SWITCH, TYPEDEF, UNION, UNSIGNED, VOID,
+  VOLATILE, WHILE, IDENT, MEMBER, PTR_MEMBER,
+  INCRESE, DECRESE, BIT_COMPLEMENT, LOG_NEG,
+  MUL, DIV, MOD, PLUS, MINUS, SHIFT_LEFT, SHIFT_RIGHT,
+  GT, LT, GE, LE, EQ, NEQ, BIT_AND, BIT_EOR, BIT_OR,
+  LOG_AND, LOG_OR, COND, ASSIGN, PLUS_ASN, MINUS_ASN,
+  MUL_ASN, DIV_ASN, MOD_ASN, SHL_ASN, SHR_ASN, BITAND_ASN,
+  BITEOR_ASN, BITOR_ASN, EOFILE, COMMA
+};
+/*****************************************************************************
+ * Structure
+ *****************************************************************************/
+struct token {
+  int token_type;
+  unsigned int value;
+  int number;
+  char idname[64];
+  char string[4096];
+};
+
+/*************************************************
+ * Parser Nodes
+ *************************************************/
+enum NODE_ID {
+  BASE, DECLARETION_LIST, FUNCTION_DEFINITION, EXTERNAL_DECLARATION,
+  TRANSLATION_UNIT, COMPILATION_UNIT, JUMP_STATEMENT, FOR_EXPRESSION,
+  FOR_DECLARATION, FOR_CONDITION, ITERATION_STATEMENT, SELECTION_STATEMENT,
+  EXPRESSION_STATEMENT, BLOCKITEM, BLOCKITEM_LIST, COMPOUND_STATEMENT,
+  LABELED_STATEMENT, STATEMENT, STATIC_ASSERT_DECLARATION, DESIGNATOR,
+  DESIGNATOR_LIST, DESIGNATION, INITIALIZER_LIST, INITIALIZER, TYPEDEF_NAME,
+  DIRECT_ABSTRACT_DECLARATOR, ABSTRACT_DECLARATOR, TYPENAME, IDENTIFIER_LIST,
+  PARAMETER_DECLARATION, PARAMETER_LIST, PARAMETER_TYPE_LIST,
+  TYPE_QUALIFIER_LIST, POINTER, DIRECT_DECLARATOR, DECLARATOR,
+  ALIGNMENT_SPECIFIER, FUNCTION_SPECIFIER, TYPE_QUALIFIER,
+  ATOMIC_TYPE_SPECIFIER, ENUMERATION_CONSTANT, ENUMERATOR, ENUMERATOR_LIST,
+  ENUM_SPECIFIER, STRUCT_DECLARATOR, STRUCT_DECLARATOR_LIST,
+  SPECIFIER_QUALIFIER_LIST, STRUCT_DECLARATION, STRUCT_DECLARATION_LIST,
+  STRUCT_UNION, STRUCT_UNION_SPECIFIER, TYPE_SPECIFIER,
+  STORAGE_CLASS_SPECIFIER, INIT_DECLARATOR, INIT_DECLARATOR_LIST,
+  DECLARATION_SPECIFIER, DECLARATION_SPECIFIER_LIST, DECLARATION,
+  CONSTANT_EXPRESSION, EXPRESSION, ASSIGNMENT_OPERATOR, ASSIGNMENT_EXPRESSION,
+  CONDITIONAL_EXPRESSION, LOGICAL_OR_EXPRESSION, LOGICAL_AND_EXPRESSION,
+  INCLUSIVE_OR_EXPRESSION, EXCLUSIVE_OR_EXPRESSION, AND_EXPRESSION,
+  EQUALIFY_EXPRESSION, RELATIONAL_EXPRESSION, SHIFT_EXPRESSION,
+  ADDITIVE_EXPRESSION, MULTIPLICATIVE_EXPRESSION, CAST_EXPRESSION,
+  UNARY_OPERATOR, UNARY_EXPRESSION, ARGUMENT_EXPRESSION_LIST,
+  POSTFIX_EXPRESSION, GENERIC_ASSOCIATION, GENERIC_ASSOCLIST,
+  GENERIC_SELECTION, PRIMARY_EXPRESSION
+};
+struct node {
+  int id;
+  struct node *parent;
+  unsigned int son_count;
+  struct node *son[];
+};
+struct string_node {
+  int id;
+  struct node *parent;
+  unsigned int size;
+  char str[]
+};
+struct number_node {
+  int id;
+  struct node *parent;
+  unsigned int value;
+}
+
+/*****************************************************************************
  * Function List
  *****************************************************************************/
 /*************************************************************
@@ -33,6 +108,18 @@ int streq(const char *s1, const char *s2);
  * Error Handler
  ******************************************/
 void errorExit(const char *s);
+/******************************************
+ * TODO Tree List Functions
+ ******************************************/
+//
+// We use a tree and lists to parse the program
+//
+enum NODE_TYPE {
+  FUNCTION, DECLARE
+};
+struct node {
+}
+
 /*************************************************************
  * Scanner Functions
  *************************************************************/
@@ -65,33 +152,6 @@ int getCharLiteral(void);
  * parser Functions
  *************************************************************/
 
-/*****************************************************************************
- * Enum
- *****************************************************************************/
-enum ALL_TOKEN {
-  COLON, SEMILICON, LPAREN, RPAREN, LSQR_BRAC, RSQR_BRAC, LCUR_BRAC, RCUR_BRAC,
-  INT_NUM, UINT_NUM, STRING_LIT, AUTO, BREAK, CASE, CHAR, CONST, CONTINUE,
-  DEFAULT, DO, DOUBLE, ELSE, ENUM, EXTERN, FLOAT, FOR, GOTO, IF, INLINE,
-  INT, LONG, REGISTER, RESTRICT, RET, SHORT, SIGNED,
-  SIZEOF, STATIC, STRUCT, SWITCH, TYPEDEF, UNION, UNSIGNED, VOID,
-  VOLATILE, WHILE, IDENT, MEMBER, PTR_MEMBER,
-  INCRESE, DECRESE, BIT_COMPLEMENT, LOG_NEG,
-  MUL, DIV, MOD, PLUS, MINUS, SHIFT_LEFT, SHIFT_RIGHT,
-  GT, LT, GE, LE, EQ, NEQ, BIT_AND, BIT_EOR, BIT_OR,
-  LOG_AND, LOG_OR, COND, ASSIGN, PLUS_ASN, MINUS_ASN,
-  MUL_ASN, DIV_ASN, MOD_ASN, SHL_ASN, SHR_ASN, BITAND_ASN,
-  BITEOR_ASN, BITOR_ASN, EOFILE, COMMA
-};
-/*****************************************************************************
- * Structure
- *****************************************************************************/
-struct token {
-  int token_type;
-  unsigned int value;
-  int number;
-  char idname[64];
-  char string[4096];
-};
 /*****************************************************************************
  * Global Variable List
  *****************************************************************************/
