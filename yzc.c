@@ -1,12 +1,9 @@
-#include "yzc.h"
 #include <stdio.h>
 #include <stdlib.h>
 /*
  * yzc: YZ Compiler
  *
  * char as unsigned char
- *
- *
  */
 /*****************************************************************************
  * Function List
