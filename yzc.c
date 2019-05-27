@@ -2,7 +2,7 @@
 #include <stdlib.h>
 /*
  * yzc: YZ Compiler
- *
+ * We don't support _Thread_local, _Static_assert
  * char as unsigned char
  */
 /*****************************************************************************
@@ -690,7 +690,7 @@ enum NODE_ID {
   ADDITIVE_EXPRESSION, MULTIPLICATIVE_EXPRESSION, CAST_EXPRESSION,
   UNARY_OPERATOR, UNARY_EXPRESSION, ARGUMENT_EXPRESSION_LIST,
   POSTFIX_EXPRESSION, GENERIC_ASSOCIATION, GENERIC_ASSOCLIST,
-  GENERIC_SELECTION, PRIMARY_EXPRESSION
+  GENERIC_SELECTION, PRIMARY_EXPRESSION, END_OF_FILE, NOP
 };
 struct node {
   int id;
@@ -720,13 +720,14 @@ struct number_node {
 };
 
 /* GLOBAL_VARIABLE */
-struct node *translation_unit;
+struct node *g_compilation_unit;
 void initTopNode(void) // translation_unit init with 8 node
 {
-  translation_unit = malloc(sizeof(struct node) + sizeof(struct node *) * 8);
-  translation_unit->parent = (struct node*)0;
-  translation_unit->max_son_count = 8;
-  translation_unit->son_count = 0;
+  g_compilation_unit = malloc(sizeof(struct node) + sizeof(struct node *) * 2);
+  g_compilation_unit->id = COMPILATION_UNIT;
+  g_compilation_unit->parent = (struct node*)0;
+  g_compilation_unit->max_son_count = 2;
+  g_compilation_unit->son_count = 0;
 }
 void addNode(struct node *restrict n, struct node *restrict parent)
 {
@@ -739,6 +740,16 @@ void addNode(struct node *restrict n, struct node *restrict parent)
     parent->max_son_count += 8;
   }
   parent->son[parent->son_count++] = n;
+}
+struct node *newNode(struct node *parent, int type, int son_node)
+{
+  struct node *nd = malloc(sizeof(struct node) + sizeof(struct node *) * son_node);
+  nd->id = type;
+  nd->parent = parent;
+  nd->max_son_count = son_node;
+  nd->son_count = 0;
+  addNode(nd, parent);
+  return nd;
 }
 void freeSonNode(struct node *ptr)
 {
@@ -767,20 +778,172 @@ void initTokenQueue(void)
   } while (++g_token_queue.last_num < 4);
   --g_token_queue.last_num;
 }
-struct token nextTokenQueue(void)
+struct token *getCurrentTokenQueue(void)
+{
+  return &g_token_queue.buffer[(g_token_queue.last_num + 1) & 3];
+}
+struct token *nextTokenQueue(void)
 {
   nextToken();
   g_token_queue.last_num = (g_token_queue.last_num + 1) & 3;
   g_token_queue.buffer[g_token_queue.last_num] = g_current_token;
-  return g_token_queue.buffer[(g_token_queue.last_num + 1) & 3];
+  return &g_token_queue.buffer[(g_token_queue.last_num + 1) & 3];
 }
-struct token lookAheadQueue(int nu)
+struct token *lookAheadQueue(int nu)
 {
-  return g_token_queue.buffer[(g_token_queue.last_num + nu + 1) & 3];
+  return &g_token_queue.buffer[(g_token_queue.last_num + nu + 1) & 3];
 }
+/* Check specifiers */
+int checkStorageClassSpecifier(int tok)
+{
+  return 
+    tok == TYPEDEF ||
+    tok == EXTERN ||
+    tok == STATIC ||
+    tok == AUTO ||
+    tok == REGISTER;
+}
+int checkStructOrUnion(int tok)
+{
+  return
+    tok == STRUCT ||
+    tok == UNION;
+}
+int checkTypeSpecifier(int tok)
+{
+  return
+    tok == VOID ||
+    tok == CHAR ||
+    tok == SHORT ||
+    tok == INT ||
+    tok == LONG ||
+    tok == FLOAT ||
+    tok == DOUBLE ||
+    tok == SIGNED ||
+    tok == UNSIGNED ||
+    checkTypeSpecifier(tok) ||
+    tok == ENUM ||
+    tok == IDENT;
+}
+int checkTypeQualifier(int tok)
+{
+  return
+    tok == CONST ||
+    tok == RESTRICT ||
+    tok == VOLATILE;
+}
+int checkDeclarationSpecifier(int tok)
+{
+  return
+    checkStorageClassSpecifier(tok) ||
+    checkStructOrUnion(tok) ||
+    checkTypeSpecifier(tok) ||
+    checkTypeQualifier(tok) ||
+    tok == INLINE;
+}
+
+/* PARSER */
+void parseDeclarationSpecifier(struct node *declaration_specifier)
+{
+}
+
+void parseInitDeclaratorList(struct node *init_declarator_list)
+{
+}
+
+void parseDeclaration(struct node *declaration)
+{
+  while (1) {
+    if (checkDeclarationSpecifier(getCurrentTokenQueue()->token_type)) {
+    parseDeclarationSpecifier(newNode(declaration, DECLARATION_SPECIFIER, 1));
+    } else if (getCurrentTokenQueue()->token_type == SEMILICON) {
+      newNode(declaration, NOP, 0);
+      return;
+    } else { // initDeclaratorList
+      parseInitDeclaratorList(newNode(declaration, INIT_DECLARATOR_LIST, 1));
+    }
+  }
+}
+
+void parseFunctionDefinition(struct node *function_definition)
+{
+}
+
+
+void parseExternalDeclaration(struct node *external_declaration)
+{
+  // Single semilicon ';'
+  if (getCurrentTokenQueue()->token_type == SEMILICON) {
+    newNode(external_declaration, NOP, 0);
+    return;
+  }
+
+  // declaration
+  // : declarationSpecifiers initDeclaratorList ';'
+  // | declarationSpecifiers ';'
+  // | staticAssertDeclaration
+  //   : '_Static_assert' ...
+  //   ;
+  // ;
+  //
+  // declarationSpecifiers
+  // : declarationSpecifier
+  //   : storageClassSpecifier
+  //     : typedef extern static _Thread_local auto register
+  //   | typeSpecifier
+  //     : void char short int long float double signed unsigned
+  //     | atomicTypeSpecifier
+  //     | structOrUnionSpecifier
+  //       : structOrUnion Identifier? '{' structDeclarationList '}'
+  //       | structOrUnion Identifier
+  //         structOrUnion
+  //         : struct union
+  //     | enumSpecifier
+  //       : enum XXX
+  //     | typedefName
+  //       : Identifier
+  //     | typeSpecifier pointer
+  //   | typeQualifier
+  //     : const restrict volatile _Atomic
+  //   | functionSpecifier
+  //     : inline _Noreturn
+  //   | alignmentSpecifier
+  //     : _Alignas ...
+  //   ;
+  // ;
+  if (checkDeclarationSpecifier(getCurrentTokenQueue()->token_type)) {
+    parseDeclaration(newNode(external_declaration, DECLARATION, 3));
+  } else {
+    parseFunctionDefinition(newNode(external_declaration, FUNCTION_DEFINITION, 2));
+  }
+
+}
+
+void parseTranslationUnit(struct node *translation_unit)
+{
+  while (1) {
+    if (getCurrentTokenQueue()->token_type == EOFILE) {
+      return;
+    } else {
+      parseExternalDeclaration(newNode(translation_unit, EXTERNAL_DECLARATION, 1));
+    }
+  }
+}
+
 /* PARSER MAIN BLOCK */
-
-
+void parseCompilationUnit(void)
+{
+  while (1) {
+    if (getCurrentTokenQueue()->token_type == EOFILE) {
+      // EOF
+      newNode(g_compilation_unit, END_OF_FILE, 0);
+      return;
+    } else {
+      // TranslationUnit
+      parseTranslationUnit(newNode(g_compilation_unit, TRANSLATION_UNIT, 1));
+    }
+  }
+}
 
 
 /* Main to test scanner*/
