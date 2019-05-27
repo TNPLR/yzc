@@ -690,7 +690,7 @@ enum NODE_ID {
   ADDITIVE_EXPRESSION, MULTIPLICATIVE_EXPRESSION, CAST_EXPRESSION,
   UNARY_OPERATOR, UNARY_EXPRESSION, ARGUMENT_EXPRESSION_LIST,
   POSTFIX_EXPRESSION, GENERIC_ASSOCIATION, GENERIC_ASSOCLIST,
-  GENERIC_SELECTION, PRIMARY_EXPRESSION, END_OF_FILE, NOP
+  GENERIC_SELECTION, PRIMARY_EXPRESSION, END_OF_FILE, NOP, KEYWORD
 };
 struct node {
   int id;
@@ -749,6 +749,16 @@ struct node *newNode(struct node *parent, int type, int son_node)
   nd->max_son_count = son_node;
   nd->son_count = 0;
   addNode(nd, parent);
+  return nd;
+}
+struct keyword_node *newKeywordNode(struct node *parent, int keyword_token)
+{
+  struct keyword_node *nd = malloc(sizeof(struct keyword_node));
+  nd->id = KEYWORD;
+  nd->parent = parent;
+  nd->son_count = 0;
+  nd->keyword = keyword_token;
+  addNode((struct node *)nd, parent);
   return nd;
 }
 void freeSonNode(struct node *ptr)
@@ -843,25 +853,68 @@ int checkDeclarationSpecifier(int tok)
 }
 
 /* PARSER */
-void parseDeclarationSpecifier(struct node *declaration_specifier)
+void parseStorageClassSpecifier(struct node *storage_class_specifier)
 {
+  newKeywordNode(storage_class_specifier, getCurrentTokenQueue()->token_type);
+}
+void parseTypeSpecifier(struct node *type_specifier)
+{
+  newKeywordNode(type_specifier, getCurrentTokenQueue()->token_type);
+}
+void parseTypeQualifier(struct node *type_qualifier)
+{
+  newKeywordNode(type_qualifier, getCurrentTokenQueue()->token_type);
+}
+void parseFunctionSpecifier(struct node *function_specifier)
+{
+  newKeywordNode(function_specifier, getCurrentTokenQueue()->token_type);
 }
 
+void parseDeclarationSpecifier(struct node *declaration_specifier)
+{
+  int type = getCurrentTokenQueue()->token_type;
+  if (checkStorageClassSpecifier(type)) {
+    parseStorageClassSpecifier(newNode(declaration_specifier, STORAGE_CLASS_SPECIFIER, 1));
+  } else if (checkTypeSpecifier(type)) {
+    parseTypeSpecifier(newNode(declaration_specifier, TYPE_SPECIFIER, 1));
+  } else if (checkTypeQualifier(type)) {
+    parseTypeQualifier(newNode(declaration_specifier, TYPE_QUALIFIER, 1));
+  } else if (type == INLINE) {
+    parseStorageClassSpecifier(newNode(declaration_specifier, STORAGE_CLASS_SPECIFIER, 1));
+  } else {
+    errorExit("Unknown Declaration Specifier");
+  }
+}
+
+// initDeclaratorList
+// : initDeclarator
+// | initDeclaratorList ',' initDeclarator
+// ;
+// initDeclarator
+// : declarator
+// | declarator '=' initializer
+// ;
 void parseInitDeclaratorList(struct node *init_declarator_list)
 {
+  while (1) {
+    if (1) {
+      // TODO
+    }
+  }
 }
 
 void parseDeclaration(struct node *declaration)
 {
   while (1) {
     if (checkDeclarationSpecifier(getCurrentTokenQueue()->token_type)) {
-    parseDeclarationSpecifier(newNode(declaration, DECLARATION_SPECIFIER, 1));
+      parseDeclarationSpecifier(newNode(declaration, DECLARATION_SPECIFIER, 1));
     } else if (getCurrentTokenQueue()->token_type == SEMILICON) {
       newNode(declaration, NOP, 0);
       return;
     } else { // initDeclaratorList
       parseInitDeclaratorList(newNode(declaration, INIT_DECLARATOR_LIST, 1));
     }
+    nextTokenQueue();
   }
 }
 
