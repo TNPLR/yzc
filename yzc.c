@@ -126,7 +126,7 @@ int nextChar(void)
 }
 void backChar(void)
 {
-  fseek(g_fptr, -1, SEEK_SET);
+  fseek(g_fptr, -1, SEEK_CUR);
 }
 
 // check char type
@@ -145,6 +145,10 @@ int isDigit(int c)
 int isNonDigit(int c)
 {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+int isNonOrDigit(int c)
+{
+  return isNonDigit(c) || isDigit(c);
 }
 
 // compare two string
@@ -315,7 +319,7 @@ void nonDigitToken(int c)
   char *ptr = g_current_token.idname;
   do {
     *ptr++ = c;
-  } while (isNonDigit(c = nextChar()));
+  } while (isNonOrDigit(c = nextChar()));
   backChar();
   checkKeyword();
 }
@@ -748,11 +752,46 @@ void freeSonNode(struct node *ptr)
 // TODO Go through functions
 
 /* TOKEN QUEUE*/
-struct token_queue_node* g_now_token;
-struct token_queue_node {
-  struct token_queue_node *prev;
-  struct token_queue_node *next;
-  struct token this_token;
+// My Queue function is weaker than normal
+struct token_queue {
+  int last_num;
+  struct token buffer[4];
 };
-// TODO Token queue function
+struct token_queue g_token_queue;
+void initTokenQueue(void)
+{
+  g_token_queue.last_num = 0;
+  do {
+    nextToken();
+    g_token_queue.buffer[g_token_queue.last_num] = g_current_token;
+  } while (++g_token_queue.last_num < 4);
+  --g_token_queue.last_num;
+}
+struct token nextTokenQueue(void)
+{
+  nextToken();
+  g_token_queue.last_num = (g_token_queue.last_num + 1) & 3;
+  g_token_queue.buffer[g_token_queue.last_num] = g_current_token;
+  return g_token_queue.buffer[(g_token_queue.last_num + 1) & 3];
+}
+struct token lookAheadQueue(int nu)
+{
+  return g_token_queue.buffer[(g_token_queue.last_num + nu + 1) & 3];
+}
 /* PARSER MAIN BLOCK */
+
+
+
+
+/* Main to test scanner*/
+
+int main(int argc, char *argv[])
+{
+  openFile(argv[1]);
+  do {
+    nextToken();
+    printf("%d\n", g_current_token.token_type);
+  } while (g_current_token.token_type != EOFILE);
+  closeFile();
+  return 0;
+}
