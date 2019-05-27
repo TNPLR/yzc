@@ -706,14 +706,14 @@ struct string_node {
   struct node *parent;
   unsigned int son_count;
   unsigned int size;
-  char str[]
+  char str[];
 };
 struct number_node {
   int id;
   struct node *parent;
   unsigned int son_count;
   unsigned int value;
-}
+};
 
 /* GLOBAL_VARIABLE */
 struct node *translation_unit;
@@ -740,7 +740,7 @@ void freeSonNode(struct node *ptr)
 {
   while (ptr->son_count--) {
     if (ptr->son[ptr->son_count]->son_count != 0) {
-      freeNodeAndSon(ptr->son[ptr->son_count]);
+      freeSonNode(ptr->son[ptr->son_count]);
     }
     free(ptr->son[ptr->son_count]);
   }
