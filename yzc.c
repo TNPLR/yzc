@@ -6,6 +6,19 @@
  * char as unsigned char
  */
 /*****************************************************************************
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ * SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER SCANNER
+ *****************************************************************************/
+/*****************************************************************************
  * Enum
  *****************************************************************************/
 enum ALL_TOKEN {
@@ -33,52 +46,6 @@ struct token {
   char string[4096];
 };
 
-/*************************************************
- * Parser Nodes
- *************************************************/
-enum NODE_ID {
-  BASE, DECLARETION_LIST, FUNCTION_DEFINITION, EXTERNAL_DECLARATION,
-  TRANSLATION_UNIT, COMPILATION_UNIT, JUMP_STATEMENT, FOR_EXPRESSION,
-  FOR_DECLARATION, FOR_CONDITION, ITERATION_STATEMENT, SELECTION_STATEMENT,
-  EXPRESSION_STATEMENT, BLOCKITEM, BLOCKITEM_LIST, COMPOUND_STATEMENT,
-  LABELED_STATEMENT, STATEMENT, STATIC_ASSERT_DECLARATION, DESIGNATOR,
-  DESIGNATOR_LIST, DESIGNATION, INITIALIZER_LIST, INITIALIZER, TYPEDEF_NAME,
-  DIRECT_ABSTRACT_DECLARATOR, ABSTRACT_DECLARATOR, TYPENAME, IDENTIFIER_LIST,
-  PARAMETER_DECLARATION, PARAMETER_LIST, PARAMETER_TYPE_LIST,
-  TYPE_QUALIFIER_LIST, POINTER, DIRECT_DECLARATOR, DECLARATOR,
-  ALIGNMENT_SPECIFIER, FUNCTION_SPECIFIER, TYPE_QUALIFIER,
-  ATOMIC_TYPE_SPECIFIER, ENUMERATION_CONSTANT, ENUMERATOR, ENUMERATOR_LIST,
-  ENUM_SPECIFIER, STRUCT_DECLARATOR, STRUCT_DECLARATOR_LIST,
-  SPECIFIER_QUALIFIER_LIST, STRUCT_DECLARATION, STRUCT_DECLARATION_LIST,
-  STRUCT_UNION, STRUCT_UNION_SPECIFIER, TYPE_SPECIFIER,
-  STORAGE_CLASS_SPECIFIER, INIT_DECLARATOR, INIT_DECLARATOR_LIST,
-  DECLARATION_SPECIFIER, DECLARATION_SPECIFIER_LIST, DECLARATION,
-  CONSTANT_EXPRESSION, EXPRESSION, ASSIGNMENT_OPERATOR, ASSIGNMENT_EXPRESSION,
-  CONDITIONAL_EXPRESSION, LOGICAL_OR_EXPRESSION, LOGICAL_AND_EXPRESSION,
-  INCLUSIVE_OR_EXPRESSION, EXCLUSIVE_OR_EXPRESSION, AND_EXPRESSION,
-  EQUALIFY_EXPRESSION, RELATIONAL_EXPRESSION, SHIFT_EXPRESSION,
-  ADDITIVE_EXPRESSION, MULTIPLICATIVE_EXPRESSION, CAST_EXPRESSION,
-  UNARY_OPERATOR, UNARY_EXPRESSION, ARGUMENT_EXPRESSION_LIST,
-  POSTFIX_EXPRESSION, GENERIC_ASSOCIATION, GENERIC_ASSOCLIST,
-  GENERIC_SELECTION, PRIMARY_EXPRESSION
-};
-struct node {
-  int id;
-  struct node *parent;
-  unsigned int son_count;
-  struct node *son[];
-};
-struct string_node {
-  int id;
-  struct node *parent;
-  unsigned int size;
-  char str[]
-};
-struct number_node {
-  int id;
-  struct node *parent;
-  unsigned int value;
-}
 
 /*****************************************************************************
  * Function List
@@ -108,18 +75,6 @@ int streq(const char *s1, const char *s2);
  * Error Handler
  ******************************************/
 void errorExit(const char *s);
-/******************************************
- * TODO Tree List Functions
- ******************************************/
-//
-// We use a tree and lists to parse the program
-//
-enum NODE_TYPE {
-  FUNCTION, DECLARE
-};
-struct node {
-}
-
 /*************************************************************
  * Scanner Functions
  *************************************************************/
@@ -148,10 +103,6 @@ void jmpBlockComment(void);
  * Char Literal Handler
  ******************************************/
 int getCharLiteral(void);
-/*************************************************************
- * parser Functions
- *************************************************************/
-
 /*****************************************************************************
  * Global Variable List
  *****************************************************************************/
@@ -693,3 +644,115 @@ void nextToken(void)
     }
   }
 }
+/*****************************************************************************
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ * PARSER PARSER PARSER PARSER PARSER PARSER PARSER PARSER
+ *****************************************************************************/
+
+// structure and enum define
+/*************************************************
+ * Parser Tree Nodes
+ *************************************************/
+enum NODE_ID {
+  BASE, DECLARETION_LIST, FUNCTION_DEFINITION, EXTERNAL_DECLARATION,
+  TRANSLATION_UNIT, COMPILATION_UNIT, JUMP_STATEMENT, FOR_EXPRESSION,
+  FOR_DECLARATION, FOR_CONDITION, ITERATION_STATEMENT, SELECTION_STATEMENT,
+  EXPRESSION_STATEMENT, BLOCKITEM, BLOCKITEM_LIST, COMPOUND_STATEMENT,
+  LABELED_STATEMENT, STATEMENT, STATIC_ASSERT_DECLARATION, DESIGNATOR,
+  DESIGNATOR_LIST, DESIGNATION, INITIALIZER_LIST, INITIALIZER, TYPEDEF_NAME,
+  DIRECT_ABSTRACT_DECLARATOR, ABSTRACT_DECLARATOR, TYPENAME, IDENTIFIER_LIST,
+  PARAMETER_DECLARATION, PARAMETER_LIST, PARAMETER_TYPE_LIST,
+  TYPE_QUALIFIER_LIST, POINTER, DIRECT_DECLARATOR, DECLARATOR,
+  ALIGNMENT_SPECIFIER, FUNCTION_SPECIFIER, TYPE_QUALIFIER,
+  ATOMIC_TYPE_SPECIFIER, ENUMERATION_CONSTANT, ENUMERATOR, ENUMERATOR_LIST,
+  ENUM_SPECIFIER, STRUCT_DECLARATOR, STRUCT_DECLARATOR_LIST,
+  SPECIFIER_QUALIFIER_LIST, STRUCT_DECLARATION, STRUCT_DECLARATION_LIST,
+  STRUCT_UNION, STRUCT_UNION_SPECIFIER, TYPE_SPECIFIER,
+  STORAGE_CLASS_SPECIFIER, INIT_DECLARATOR, INIT_DECLARATOR_LIST,
+  DECLARATION_SPECIFIER, DECLARATION_SPECIFIER_LIST, DECLARATION,
+  CONSTANT_EXPRESSION, EXPRESSION, ASSIGNMENT_OPERATOR, ASSIGNMENT_EXPRESSION,
+  CONDITIONAL_EXPRESSION, LOGICAL_OR_EXPRESSION, LOGICAL_AND_EXPRESSION,
+  INCLUSIVE_OR_EXPRESSION, EXCLUSIVE_OR_EXPRESSION, AND_EXPRESSION,
+  EQUALIFY_EXPRESSION, RELATIONAL_EXPRESSION, SHIFT_EXPRESSION,
+  ADDITIVE_EXPRESSION, MULTIPLICATIVE_EXPRESSION, CAST_EXPRESSION,
+  UNARY_OPERATOR, UNARY_EXPRESSION, ARGUMENT_EXPRESSION_LIST,
+  POSTFIX_EXPRESSION, GENERIC_ASSOCIATION, GENERIC_ASSOCLIST,
+  GENERIC_SELECTION, PRIMARY_EXPRESSION
+};
+struct node {
+  int id;
+  struct node *parent;
+  unsigned int son_count;
+  unsigned int max_son_count;
+  struct node *son[];
+};
+struct keyword_node {
+  int id;
+  struct node *parent;
+  unsigned int son_count;
+  int keyword;
+};
+struct string_node {
+  int id;
+  struct node *parent;
+  unsigned int son_count;
+  unsigned int size;
+  char str[]
+};
+struct number_node {
+  int id;
+  struct node *parent;
+  unsigned int son_count;
+  unsigned int value;
+}
+
+/* GLOBAL_VARIABLE */
+struct node *translation_unit;
+void initTopNode(void) // translation_unit init with 8 node
+{
+  translation_unit = malloc(sizeof(struct node) + sizeof(struct node *) * 8);
+  translation_unit->parent = (struct node*)0;
+  translation_unit->max_son_count = 8;
+  translation_unit->son_count = 0;
+}
+void addNode(struct node *restrict n, struct node *restrict parent)
+{
+  n->parent = parent;
+  if (parent->max_son_count - parent->son_count == 0) {
+    parent = realloc(parent, sizeof(struct node) + sizeof(struct node *) * (parent->max_son_count + 8));
+    if (parent == (struct node *)0) {
+      errorExit("CANNOT ALLOC MEMORY");
+    }
+    parent->max_son_count += 8;
+  }
+  parent->son[parent->son_count++] = n;
+}
+void freeSonNode(struct node *ptr)
+{
+  while (ptr->son_count--) {
+    if (ptr->son[ptr->son_count]->son_count != 0) {
+      freeNodeAndSon(ptr->son[ptr->son_count]);
+    }
+    free(ptr->son[ptr->son_count]);
+  }
+}
+// TODO Go through functions
+
+/* TOKEN QUEUE*/
+struct token_queue_node* g_now_token;
+struct token_queue_node {
+  struct token_queue_node *prev;
+  struct token_queue_node *next;
+  struct token this_token;
+};
+// TODO Token queue function
+/* PARSER MAIN BLOCK */
